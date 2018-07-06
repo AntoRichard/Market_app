@@ -1,0 +1,57 @@
+<% include ./layouts/adminHeader%>
+
+<h2 class="page-title">Add a product</h2>
+<a href="/admin/product" class="btn btn-primary">Back to all products</a>
+<br><br>
+<form action="/admin/product/add-product" method="POST" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="">Title</label>
+        <input class="form-control" type="text" name="title" value="<%=title%>" placeholder="Title">
+    </div>
+
+    <div class="form-group">
+        <label for="">Description</label>
+        <textarea class="form-control" 
+       cols="30" rows="10" type="text" name="desc" value="<%=desc%>" placeholder="Description"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="">Category</label>
+        <select class="form-control" name="category">
+            <% categories.forEach(function(cats){ %>
+                <option  value="<%=cats.slug%>"><%=cats.title%></option>
+            <%})%>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="">Price</label>
+        <input class="form-control" type="text" name="price" value="<%=price%>" placeholder="Price">
+    </div>
+    
+    <div class="form-group">
+        <label for="">Image</label>
+        <input class="form-control" type="file" name="image" id="img">
+        <img src="#"  id="imgPreview" alt=""> 
+     </div>
+
+    <button type="submit" class="btn btn-default">SUBMIT</button>
+</form>
+
+<script>
+    function URLreader(input){
+        if(input.files && input.files[0]){
+            var reader = new FileReader();
+
+            reader.onload = function(event){
+                $("#imgPreview").attr('src',event.target.result).width(100).height(100);
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    $("#img").change(function(){
+        URLreader(this);
+    })
+</script>
+
+<% include ./layouts/adminFooter%>
