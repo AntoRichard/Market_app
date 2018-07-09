@@ -1,44 +1,35 @@
+<% include _layouts/header %>
 
-<% include ./layouts/adminHeader %>
-<h2 class="page-title">PRODUCTS</h2>
-<a href="/admin/product/add-product" class="btn btn-primary">Add new product</a>
-<br><br>
-<%if(count>0){%>
-<table class="table table-striped">
-    <thead>
-        <tr class="home">
-            <th>Product</th>
-            <th>Price</th>
-            <th>Category</th>
-            <th>Product Image</th>
-            <th>Edit</th>
-            <th>Delete</th>
-        </tr>
-    </thead>
-    <tbody>
-        <% product.forEach(function(prod){ %>
-            <tr>
-                <td><%=prod.title%></td>
-                <td>RS: <%=parseFloat(prod.price).toFixed(2)%></td>
-                <td><%=prod.category%></td>
-                <td>
-                    <% if(prod.image == "") {%>
-                        <img id="image" src="/image/noimage.png" alt="">
-                    <%}else{%>
-                        <img id="image" src="/product_images/<%=prod._id%>/<%=prod.image%>" alt="">
-                    <%}%>
-                </td>
-                <td><a href="/admin/product/edit-product/<%=prod._id%>">Edit</a></td>
-                <% if(prod.slug === "home"){%>
-                    <td></td>
-                    <%}else{%>
-                <td><a class="comformDelete" href="/admin/product/delete-product/<%=prod._id%>">Delete</a></td>
-                <%}%>
-            </tr>
-        <% }); %>
-    </tbody>
-</table>
-<%}else{%>
-    <h3 class="text-center">There is no product</h3>
-<%}%>
-<% include ./layouts/adminFooter %>
+<div class="row">
+    
+    <h1 class="page-header"><%= p.title %></h1>
+    
+    <div class="col-xs-12 col-md-5">
+        <img class="spi" src="/product_images/<%= p.id %>/<%= p.image %>" alt="">
+        <br>
+    </div>
+    <div class="col-xs-12 col-md-7">
+        <p><%= p.desc %></p>
+        <p>RS.<%= parseFloat(p.price).toFixed(2) %></p>
+        <% if (loggedIn) { %>
+        <p><a href="/cart/add/<%= p.slug %>">Add to cart</a></p>
+        <% } else {%>
+        <p>You must be logged in to purchase items.</p>
+        <% } %>
+    </div>
+    <div class="col-xs-12">
+        <ul class="gallery">
+            <% galleryImages.forEach(function(image){ %>
+            <% if (image != "thumbs") { %>
+            <li>
+                <a data-fancybox="gallery" href="/product_images/<%= p.id %>/gallery/<%= image %>">
+                    <img src="/product_images/<%= p.id %>/gallery/thumbs/<%= image %>" alt="">
+                </a>
+            </li>
+            <% } %>
+            <% }); %>
+        </ul>
+    </div>
+</div>
+
+<% include _layouts/footer %>

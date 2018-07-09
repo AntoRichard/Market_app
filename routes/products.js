@@ -1,87 +1,89 @@
 var express = require('express');
 var router = express.Router();
 var fs = require('fs-extra');
+var auth = require('../config/auth');
+var isUser = auth.isUser;
 
-// GET product model
+// Get Product model
 var Product = require('../models/product');
 
+// Get Category model
 var Category = require('../models/category');
-// exports
-router.get('/',(req,res)=>{
-    Product.find(function(err,products){
-        if(err){
-            console.log(err);
-        }
 
-        res.render('all_product',{
-            title:'All products',
-            products:products
+/*
+ * GET all products
+ */
+router.get('/', function (req, res) {
+//router.get('/', isUser, function (req, res) {
+
+    Product.find(function (err, products) {
+        if (err)
+            console.log(err);
+
+        res.render('all_products', {
+            title: 'All products',
+            products: products
         });
     });
+
 });
 
-// GET a page
 
-router.get('/:category',(req,res)=>{
+/*
+ * GET products by category
+ */
+router.get('/:category', function (req, res) {
+
     var categorySlug = req.params.category;
-    // console.log(categorySlug);
-    Category.find({slug:categorySlug},function(err,c){
-    
-        Product.find({category:categorySlug},function(err,products){
-            if(err){
-                console.log(err);
-            }
 
-            res.render('cat_products',{
-                title:c.title,
-                products:products
+    Category.findOne({slug: categorySlug}, function (err, c) {
+        Product.find({category: categorySlug}, function (err, products) {
+            if (err)
+                console.log(err);
+
+            res.render('cat_products', {
+                title: c.title,
+                products: products
             });
         });
     });
+
 });
 
-// product details
-router.get('/:category/:product',function(req,res){
-    var galleryImage = null;
-    
-    Product.findOne({slug:req.params.product},function(err,pro){
-        if(err){
+/*
+ * GET product details
+ */
+router.get('/:category/:product', function (req, res) {
+
+    var galleryImages = null;
+    var loggedIn = (req.isAuthenticated()) ? true : false;
+
+    Product.findOne({slug: req.params.product}, function (err, product) {
+        if (err) {
             console.log(err);
-        }else{
-            // console.log(req.params.id);
-            // console.log(pro._id);
-            // var GalleryDir = 'public/product_images/'+ pro._id+'/gallery';
-            // console.log(GalleryDir);
-            // fs.readdir(GalleryDir,function(err,files){
-            //     if(err){
-            //         console.log(err);
-            //     }else{
-                    // galleryImage = files; 
-                    // console.log(pro.title);
-                    res.render('prod',{
-                    title:pro.title,
-                    p:pro
-                    
+        } else {
+            var galleryDir = 'public/product_images/' + product._id + '/gallery';
+
+            fs.readdir(galleryDir, function (err, files) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    galleryImages = files;
+
+                    res.render('product', {
+                        title: product.title,
+                        p: product,
+                        galleryImages: galleryImages,
+                        loggedIn: loggedIn
                     });
-                // }
-            // });
+                }
+            });
         }
     });
+
 });
 
+// Exports
 module.exports = router;
 
 
-// <div class="col-xs-12">
-// <ul class="gallery">
-//       <%  galleryImage.forEach(function(img){ %>
-//         <%   if(img!="thumbs"){%>
-//                 <li>
-//                     <a  data-fancybox="gallery" href="/product_images/<%=p.id%>/gallery/<%=image%>">
-//                     <img src="/product_image/<%=p.id%>/gallery/thumbs/<%=image%>" alt="">
-//                     </a>
-//                 </li>
-//             <%  } %>
-//         <%}) %>
-// </ul>
-// </div>

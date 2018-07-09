@@ -1,28 +1,32 @@
-const mongoose = require('mongoose');
+var mongoose = require('mongoose');
 
-// pages schema
-let productSchema = mongoose.Schema({
-    title:{
-        type:String,
-        require:true
+// Product Schema
+var ProductSchema = mongoose.Schema({
+   
+    title: {
+        type: String,
+        required: true
     },
-    slug:{
-        type:String
+    slug: {
+        type: String
     },
-    desc:{
-        type:String,
-        require:true
+    desc: {
+        type: String,
+        required: true
     },
-    category:{
-        type:String,
-        require:true
+    category: {
+        type: String,
+        required: true
     },
-    price:{
-        type:Number,
-        require:true
+    price: {
+        type: Number,
+        required: true
     },
-    image:{
-        type:String
+    image: {
+        type: String
     }
-}); 
-let product = module.exports = mongoose.model('Product',productSchema);
+    
+});
+
+var Product = module.exports = mongoose.model('Product', ProductSchema);
+

@@ -1,13 +1,17 @@
-const mongoose = require('mongoose');
+var mongoose = require('mongoose');
 
-// category schema
-let categorySchema = mongoose.Schema({
-    title:{
-        type:String,
-        require:true
+// Category Schema
+var CategorySchema = mongoose.Schema({
+   
+    title: {
+        type: String,
+        required: true
     },
-    slug:{
-        type:String
+    slug: {
+        type: String
     }
-}); 
-let page = module.exports = mongoose.model('Category',categorySchema);
+    
+});
+
+var Category = module.exports = mongoose.model('Category', CategorySchema);
+

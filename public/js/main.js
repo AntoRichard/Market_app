@@ -1,12 +1,18 @@
-$(function(){
+$(function () {
 
-    if($('textarea#ta').length){
+    if ($('textarea#ta').length) {
         CKEDITOR.replace('ta');
     }
-    $('a.comformDelete').on('click',function(){
-        if(!confirm('confirm delete')){
+
+    $('a.confirmDeletion').on('click', function () {
+        if (!confirm('Confirm deletion'))
             return false;
-        }
-    })
+    });
+    
+    if ($("[data-fancybox]").length) {
+        $("[data-fancybox]").fancybox();
+    }
 
 });
+
+

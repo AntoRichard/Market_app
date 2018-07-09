@@ -1,147 +1,149 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const session = require('express-session'); 
-const ExpressValidator = require('express-validator');
-// const Page = require('./models/page');
-const fileupload = require('express-fileupload');
+var express = require('express');
+var path = require('path');
+var mongoose = require('mongoose');
+var config = require('./config/database');
+var bodyParser = require('body-parser');
+var session = require('express-session');
+var expressValidator = require('express-validator');
+var fileUpload = require('express-fileupload');
+var passport = require('passport');
 
-const config = require('./config/database');
-let path = require('path');
-const PORT = 3000;
-
-// Connecting to Database
+// Connect to db
 mongoose.connect(config.database);
 var db = mongoose.connection;
-db.on('error',console.error.bind(console,'connection error:'));
-db.once('open',()=>{
-    console.log("connected to database");
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function () {
+    console.log('Connected to MongoDB');
 });
-// initilise app
-let app = express();
 
-// setup view engine
-app.set('views',path.join(__dirname,'views'));
-app.set('view engine','ejs');
+// Init app
+var app = express();
 
+// View engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 
-// GET page model
- var Page = require('./models/page');
+// Set public folder
+app.use(express.static(path.join(__dirname, 'public')));
 
-//  get all pages to pass to header.ejs
-    Page.find({}).sort({sorting:1}).exec(function(err,pages){
-        if(err){
-            console.log(err);
-        }else{
-            app.locals.pages = pages;
-        }
-    });
+// Set global errors variable
+app.locals.errors = null;
 
- // GET page model
- var Category = require('./models/category');
+// Get Page Model
+var Page = require('./models/page');
 
- //  get all Category to pass to header.ejs
-    Category.find(function(err,categories){
-         if(err){
-             console.log(err);
-         }else{
-             app.locals.categories = categories ;
-         }
-     });
+// Get all pages to pass to header.ejs
+Page.find({}).sort({sorting: 1}).exec(function (err, pages) {
+    if (err) {
+        console.log(err);
+    } else {
+        app.locals.pages = pages;
+    }
+});
 
+// Get Category Model
+var Category = require('./models/category');
 
+// Get all categories to pass to header.ejs
+Category.find(function (err, categories) {
+    if (err) {
+        console.log(err);
+    } else {
+        app.locals.categories = categories;
+    }
+});
 
-// express fileupload 
-app.use(fileupload());
+// Express fileUpload middleware
+app.use(fileUpload());
 
-
-// Body-Parser middleware 
-app.use(bodyParser.urlencoded({extended:true}));
+// Body Parser middleware
+// 
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({extended: false}));
+// parse application/json
 app.use(bodyParser.json());
 
-// Session middleware
+// Express Session middleware
 app.use(session({
-    secret:'keyboard cat',
-    resave:true,
-    aveUninitialized:true
-    // cookie:{secure:true}
+    secret: 'keyboard cat',
+    resave: true,
+    saveUninitialized: true
+//  cookie: { secure: true }
 }));
 
+// Express Validator middleware
+app.use(expressValidator({
+    errorFormatter: function (param, msg, value) {
+        var namespace = param.split('.')
+                , root = namespace.shift()
+                , formParam = root;
 
-
-// express-validator middleware
-app.use(ExpressValidator({
-    errorFormatter:function(param,msg,value){
-        var nameSpace = param.split('.'),
-        root = nameSpace.shift(),
-        formparam = root;
-        while(nameSpace.length){
-            formparam+='['+nameSpace.shift()+']';
+        while (namespace.length) {
+            formParam += '[' + namespace.shift() + ']';
         }
-        return{
-            param:formparam,
-            msg:msg,
-            value:value
+        return {
+            param: formParam,
+            msg: msg,
+            value: value
         };
     },
-    customValidators:{
-        isImage:function(value,filename){
+    customValidators: {
+        isImage: function (value, filename) {
             var extension = (path.extname(filename)).toLowerCase();
-            switch(extension)
-            {
+            switch (extension) {
                 case '.jpg':
                     return '.jpg';
                 case '.jpeg':
                     return '.jpeg';
                 case '.png':
                     return '.png';
+                case '':
+                    return '.jpg';
                 default:
                     return false;
             }
         }
     }
 }));
-// Connect flash
 
+// Express Messages middleware
 app.use(require('connect-flash')());
 app.use(function (req, res, next) {
-  res.locals.messages = require('express-messages')(req, res);
-  next();
+    res.locals.messages = require('express-messages')(req, res);
+    next();
 });
 
- // express middleware
-app.get('*',function(req,res,next){
-    res.locals.cart = req.session.cart;
-    next();
-})
+// Passport Config
+require('./config/passport')(passport);
+// Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
-// setup public folder
-app.use(express.static(path.join(__dirname,'public')));
+app.get('*', function(req,res,next) {
+   res.locals.cart = req.session.cart;
+   res.locals.user = req.user || null;
+   next();
+});
 
-// setup local variables
-app.locals.errors = null;
-
-// set routes
-var cart = require('./routes/cart.js');
+// Set routes 
 var pages = require('./routes/pages.js');
 var products = require('./routes/products.js');
-var adminPages = require('./routes/adminpages.js');
-var adminProduct = require('./routes/product.js');
-var adminCategories = require('./routes/category.js');
+var cart = require('./routes/cart.js');
+var users = require('./routes/users.js');
+var adminPages = require('./routes/admin_pages.js');
+var adminCategories = require('./routes/admin_categories.js');
+var adminProducts = require('./routes/admin_products.js');
 
+app.use('/admin/pages', adminPages);
+app.use('/admin/categories', adminCategories);
+app.use('/admin/products', adminProducts);
+app.use('/products', products);
+app.use('/cart', cart);
+app.use('/users', users);
+app.use('/', pages);
 
-
-app.use('/',pages);
-app.use('/cart',cart);
-app.use('/products',products);
-app.use('/admin/pages',adminPages);
-app.use('/admin/categories',adminCategories);
-app.use('/admin/products',adminProduct);
-
-
-
-
-// Server running in port:3000
-app.listen(PORT || process.env.PORT,()=>{
-    console.log("Server is running in PORT:"+PORT);
+// Start the server
+var port = 3000;
+app.listen(port, function () {
+    console.log('Server started on port ' + port);
 });
