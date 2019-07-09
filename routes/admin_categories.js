@@ -6,9 +6,9 @@ var isAdmin = auth.isAdmin;
 // Get Category model
 var Category = require('../models/category');
 
-/*
- * GET category index
- */
+
+//GET category index
+ 
 router.get('/', function (req, res) {
     Category.find(function (err, categories) {
         if (err)
@@ -19,9 +19,9 @@ router.get('/', function (req, res) {
     });
 });
 
-/*
- * GET add category
- */
+
+ // GET add category
+ 
 router.get('/add-category', function (req, res) {
 
     var title = "";
@@ -32,9 +32,9 @@ router.get('/add-category', function (req, res) {
 
 });
 
-/*
- * POST add category
- */
+
+ // POST add category
+ 
 router.post('/add-category', function (req, res) {
 
     req.checkBody('title', 'Title must have a value.').notEmpty();
@@ -83,9 +83,9 @@ router.post('/add-category', function (req, res) {
 
 });
 
-/*
- * GET edit category
- */
+
+ // GET edit category
+ 
 router.get('/edit-category/:id', function (req, res) {
 
     Category.findById(req.params.id, function (err, category) {
@@ -100,9 +100,9 @@ router.get('/edit-category/:id', function (req, res) {
 
 });
 
-/*
- * POST edit category
- */
+
+//POST edit category
+ 
 router.post('/edit-category/:id', function (req, res) {
 
     req.checkBody('title', 'Title must have a value.').notEmpty();
@@ -160,9 +160,9 @@ router.post('/edit-category/:id', function (req, res) {
 
 });
 
-/*
- * GET delete category
- */
+
+// GET delete category
+ 
 router.get('/delete-category/:id', function (req, res) {
     Category.findByIdAndRemove(req.params.id, function (err) {
         if (err)
